@@ -15,12 +15,17 @@
  */
 package rx.wifi.android;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.SupplicantState;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.List;
 
@@ -32,7 +37,8 @@ import io.reactivex.functions.Predicate;
 import rx.receiver.android.RxReceiver;
 
 public class RxWifi {
-    public static Observable<List<ScanResult>> scan(final Context context) {
+    @NonNull
+    public static Observable<List<ScanResult>> scan(@NonNull final Context context) {
         final WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.RSSI_CHANGED_ACTION);
@@ -47,13 +53,14 @@ public class RxWifi {
                 })
                 .map(new Function<Intent, List<ScanResult>>() {
                     @Override
-                    public List<ScanResult> apply(Intent intent) throws Exception {
+                    public List<ScanResult> apply(final Intent intent) throws Exception {
                         return wifiManager.getScanResults();
                     }
                 });
     }
 
-    public static Observable<Integer> states(final Context context) {
+    @NonNull
+    public static Observable<Integer> states(@NonNull final Context context) {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
 
@@ -66,7 +73,8 @@ public class RxWifi {
                 });
     }
 
-    public static Observable<SupplicantState> supplicantStates(final Context context) {
+    @NonNull
+    public static Observable<SupplicantState> supplicantStates(@NonNull final Context context) {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION);
 
@@ -79,7 +87,8 @@ public class RxWifi {
                 });
     }
 
-    public Observable<SupplicantState> connected(final Context context) {
+    @NonNull
+    public static Observable<SupplicantState> connected(final Context context) {
         return supplicantStates(context)
                 .filter(new Predicate<SupplicantState>() {
                     @Override
@@ -87,5 +96,52 @@ public class RxWifi {
                         return supplicantState == SupplicantState.COMPLETED;
                     }
                 });
+    }
+
+    @SuppressLint("NewApi")
+    public static void connect(@NonNull final Context context, @NonNull String ssid) {
+        final WifiManager wifiManager = context.getSystemService(WifiManager.class);
+        wifiManager.disconnect();
+        for (WifiConfiguration config : wifiManager.getConfiguredNetworks()) {
+            String trimSsid = config.SSID.replaceAll("\"$", "").replaceAll("^\"", "");
+            if (trimSsid.equals(ssid)) {
+                wifiManager.enableNetwork(config.networkId, true);
+            } else {
+                wifiManager.disableNetwork(config.networkId);
+            }
+        }
+        wifiManager.reconnect();
+    }
+
+    @SuppressLint("NewApi")
+    public static boolean hasConnected(@NonNull final Context context, @NonNull String ssid) {
+        final WifiManager wifiManager = context.getSystemService(WifiManager.class);
+        final WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
+        String trimSsid = wifiInfo.getSSID().replaceAll("\"$", "").replaceAll("^\"", "");
+        if (!trimSsid.equals(ssid)) {
+            return false;
+        }
+
+        if (wifiInfo.getSupplicantState() != SupplicantState.COMPLETED) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @NonNull
+    public Observable<ScanResult> connects(@NonNull final Context context, @NonNull String ssid) {
+        // TODO
+        return Observable.empty();
+    //     if ()
+    //     connect(context, ssid)
+    //     return supplicantStates(context)
+    //             .filter(new Predicate<SupplicantState>() {
+    //                 @Override
+    //                 public boolean test(SupplicantState supplicantState) throws Exception {
+    //                     return supplicantState == SupplicantState.COMPLETED;
+    //                 }
+    //             });
     }
 }

@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 
 import io.reactivex.Observable;
@@ -31,7 +32,8 @@ import io.reactivex.functions.Cancellable;
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 
 public class RxReceiverLocal {
-    public static Observable<Intent> receives(final Context context, final IntentFilter intentFilter) {
+    @NonNull
+    public static Observable<Intent> receives(@NonNull final Context context, @NonNull final IntentFilter intentFilter) {
         return Observable.create(new ObservableOnSubscribe<Intent>() {
             @Override public void subscribe(final ObservableEmitter<Intent> emitter) {
                 final BroadcastReceiver receiver = new BroadcastReceiver() {

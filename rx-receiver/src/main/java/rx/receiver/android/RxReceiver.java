@@ -31,6 +31,7 @@ import io.reactivex.functions.Cancellable;
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 
 public class RxReceiver {
+    @NonNull
     public static Observable<Intent> receives(@NonNull final Context context, @NonNull final IntentFilter intentFilter) {
         return Observable.create(new ObservableOnSubscribe<Intent>() {
             @Override public void subscribe(final ObservableEmitter<Intent> emitter) {

@@ -26,6 +26,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
 
 import java.util.List;
 
@@ -39,9 +40,13 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import rx.receiver.android.RxReceiver;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
 public class RxWifi {
     @SuppressLint("NewApi")
     @NonNull
+    @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
     public static Observable<List<ScanResult>> scan(@NonNull final Context context) {
         final WifiManager wifiManager = context.getSystemService(WifiManager.class);
         final IntentFilter intentFilter = new IntentFilter();
@@ -92,6 +97,10 @@ public class RxWifi {
                 .map(new Function<Intent, SupplicantState>() {
                     @Override
                     public SupplicantState apply(Intent intent) throws Exception {
+                        //.flatMap {
+                        //  return ((supplicantState != null) && SupplicantState.isValidState(supplicantState)) ?
+                        //      Observable.just(supplicantState) : Observable.empty();
+                        //}
                         return intent.getParcelableExtra(WifiManager.EXTRA_NEW_STATE);
                     }
                 });
@@ -189,6 +198,7 @@ public class RxWifi {
     }
 
     @NonNull
+    @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
     public static Maybe<String> connects(@NonNull final Context context, @NonNull final String ssid, @Nullable final String password) {
         if (isConnected(context, ssid)) return Maybe.just(ssid);
 
@@ -211,6 +221,7 @@ public class RxWifi {
             });
     }
 
+    @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
     public static Maybe<ScanResult> scanFor(@NonNull final Context context, @NonNull final String ssid) {
         return scan(context).flatMap(new Function<List<ScanResult>, ObservableSource<ScanResult>>() {
             @Override

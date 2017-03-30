@@ -13,15 +13,15 @@ RxWifi.scan(context).subscribe { scanResult ->
 Connect:
 
 ```kt
-RxWifi.connects(context, ssid)
-  .subscribe({ scanResult ->
-    println(scanResult)
+RxWifi.connects(context, ssid, password)
+   .subscribe({
+     println(it)
    }, { e -> {
     // ssid not found
     // auth failure
     // connection failure
     // no internet?
-  })
+   })
 ```
 
 ## Installation
@@ -29,11 +29,11 @@ RxWifi.connects(context, ssid)
 ```gradle
 repositories {
     jcenter()
-
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
-    compile 'com.github.yongjhih.rx-wifi:rx-wifi:0.0.2'
+    compile 'com.github.yongjhih.rx-wifi:rx-wifi:-SNAPSHOT'
 }
 ```
 
@@ -64,6 +64,7 @@ p.s.:
 
 * It not works on Samsung Note Edge, Android 6.0.1
 * It does work on Nexus Pixel, Android 7.1.1 (can also reproduce)
+* It does work on Nexus 5X, Android 7.1.1
 * It does work on Nexus 5, Android 6.0.1
 
 ## LICENSE

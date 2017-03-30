@@ -108,16 +108,72 @@ public class RxWifi {
                 });
     }
 
+    public static void connect(@NonNull final Context context, @NonNull final ScanResult scanResult) {
+        connect(context, scanResult, null);
+    }
+
     @SuppressLint("NewApi")
-    public static void connect(@NonNull final Context context, @NonNull final String ssid) {
+    public static void connect(@NonNull final Context context, @NonNull final ScanResult scanResult, @Nullable final String password) {
         final WifiManager wifiManager = context.getSystemService(WifiManager.class);
+        final WifiConfiguration newConfig = new WifiConfiguration();
+        final String trimSsid = scanResult.SSID.replaceAll("\"$", "").replaceAll("^\"", "");
+        newConfig.SSID = "\""+ trimSsid + "\"";
+        newConfig.status = WifiConfiguration.Status.ENABLED;
+        newConfig.priority = 100;
+
+        if (scanResult.capabilities.toUpperCase().contains("WEP")) {
+            newConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+            newConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+            newConfig.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+            newConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+            newConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
+            newConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+            newConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+            newConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+            newConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+
+            if (password != null) {
+                newConfig.wepKeys[0] = "\"" + password + "\"";
+            }
+
+            newConfig.wepTxKeyIndex = 0;
+
+        } else if (scanResult.capabilities.toUpperCase().contains("WPA")) {
+            newConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+            newConfig.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+            newConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+            newConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+            newConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+            newConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+            newConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+            newConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+            newConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+
+            if (password != null) {
+                newConfig.preSharedKey = "\"" + password + "\"";
+            }
+        } else {
+            newConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+            newConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+            newConfig.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+            newConfig.allowedAuthAlgorithms.clear();
+            newConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+            newConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+            newConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+            newConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+            newConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+            newConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+        }
+
+        wifiManager.addNetwork(newConfig); // networkId
+
         wifiManager.disconnect();
-        for (WifiConfiguration config : wifiManager.getConfiguredNetworks()) {
-            String trimSsid = config.SSID.replaceAll("\"$", "").replaceAll("^\"", "");
-            if (trimSsid.equals(ssid)) {
+        for (final WifiConfiguration config : wifiManager.getConfiguredNetworks()) {
+            final String trimConfigSsid = config.SSID.replaceAll("\"$", "").replaceAll("^\"", "");
+            if (trimConfigSsid.equals(trimSsid)) {
                 wifiManager.enableNetwork(config.networkId, true);
             } else {
-                wifiManager.disableNetwork(config.networkId);
+                wifiManager.disableNetwork(config.networkId); // Force connect even if no-internet wifi
             }
         }
         wifiManager.reconnect();
@@ -133,14 +189,14 @@ public class RxWifi {
     }
 
     @NonNull
-    public Maybe<String> connects(@NonNull final Context context, @NonNull final String ssid) {
+    public static Maybe<String> connects(@NonNull final Context context, @NonNull final String ssid, @Nullable final String password) {
         if (isConnected(context, ssid)) return Maybe.just(ssid);
 
         return scanFor(context, ssid)
             .doOnSuccess(new Consumer<ScanResult>() {
                 @Override
                 public void accept(ScanResult scanResult) throws Exception {
-                    connect(context, ssid);
+                    connect(context, scanResult, password);
                 }
             }).flatMap(new Function<ScanResult, MaybeSource<SupplicantState>>() {
                 @Override
@@ -155,7 +211,6 @@ public class RxWifi {
             });
     }
 
-    @SuppressLint("NewApi")
     public static Maybe<ScanResult> scanFor(@NonNull final Context context, @NonNull final String ssid) {
         return scan(context).flatMap(new Function<List<ScanResult>, ObservableSource<ScanResult>>() {
             @Override
@@ -171,7 +226,6 @@ public class RxWifi {
         }).firstElement();
     }
 
-    @SuppressLint("NewApi")
     public static Maybe<SupplicantState> connectedFor(@NonNull final Context context, @NonNull final String ssid) {
         return supplicantStates(context).filter(new Predicate<SupplicantState>() {
             @Override

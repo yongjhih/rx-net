@@ -15,7 +15,7 @@
  */
 package rx.wifi.android;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -24,6 +24,7 @@ import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresPermission;
@@ -44,7 +45,12 @@ import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 public class RxWifi {
-    @SuppressLint("NewApi")
+    /**
+     *
+     * @param context
+     * @return
+     */
+    @TargetApi(Build.VERSION_CODES.M)
     @NonNull
     @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
     public static Observable<List<ScanResult>> scan(@NonNull final Context context) {
@@ -57,7 +63,9 @@ public class RxWifi {
                 .doOnSubscribe(new Consumer<Disposable>() {
                     @Override
                     public void accept(Disposable disposable) throws Exception {
-                        wifiManager.startScan(); // obs.dispose -> onCancel -> unregister -> stop scan
+                        // Do not worry stopScan() here
+                        // obs.dispose -> onCancel -> unregister -> equal to stop scan
+                        wifiManager.startScan();
                     }
                 })
                 .map(new Function<Intent, List<ScanResult>>() {
@@ -69,10 +77,8 @@ public class RxWifi {
     }
 
     /**
-     * TODO @WifiState
-     *
      * @param context
-     * @return @WifiState
+     * @return Observable<@WifiState Integer>
      */
     @NonNull
     public static Observable<Integer> states(@NonNull final Context context) {
@@ -82,12 +88,19 @@ public class RxWifi {
         return RxReceiver.receives(context, intentFilter)
                 .map(new Function<Intent, Integer>() {
                     @Override
+                    @WifiState
                     public Integer apply(Intent intent) throws Exception {
-                        return intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, WifiManager.WIFI_STATE_UNKNOWN);
+                        @WifiState
+                        int state = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, WifiManager.WIFI_STATE_UNKNOWN);
+                        return state;
                     }
                 });
     }
 
+    /**
+     * @param context
+     * @return
+     */
     @NonNull
     public static Observable<SupplicantState> supplicantStates(@NonNull final Context context) {
         final IntentFilter intentFilter = new IntentFilter();
@@ -97,6 +110,7 @@ public class RxWifi {
                 .map(new Function<Intent, SupplicantState>() {
                     @Override
                     public SupplicantState apply(Intent intent) throws Exception {
+                        // necessary validation?
                         //.flatMap {
                         //  return ((supplicantState != null) && SupplicantState.isValidState(supplicantState)) ?
                         //      Observable.just(supplicantState) : Observable.empty();
@@ -106,6 +120,11 @@ public class RxWifi {
                 });
     }
 
+    /**
+     *
+     * @param context
+     * @return
+     */
     @NonNull
     public static Observable<SupplicantState> connected(@NonNull final Context context) {
         return supplicantStates(context)
@@ -117,11 +136,22 @@ public class RxWifi {
                 });
     }
 
+    /**
+     *
+     * @param context
+     * @param scanResult
+     */
     public static void connect(@NonNull final Context context, @NonNull final ScanResult scanResult) {
         connect(context, scanResult, null);
     }
 
-    @SuppressLint("NewApi")
+    /**
+     *
+     * @param context
+     * @param scanResult
+     * @param password
+     */
+    @TargetApi(Build.VERSION_CODES.M)
     public static void connect(@NonNull final Context context, @NonNull final ScanResult scanResult, @Nullable final String password) {
         final WifiManager wifiManager = context.getSystemService(WifiManager.class);
         final WifiConfiguration newConfig = new WifiConfiguration();
@@ -188,7 +218,13 @@ public class RxWifi {
         wifiManager.reconnect();
     }
 
-    @SuppressLint("NewApi")
+    /**
+     *
+     * @param context
+     * @param ssid
+     * @return
+     */
+    @TargetApi(Build.VERSION_CODES.M)
     public static boolean isConnected(@NonNull final Context context, @NonNull final String ssid) {
         final WifiManager wifiManager = context.getSystemService(WifiManager.class);
         final WifiInfo wifiInfo = wifiManager.getConnectionInfo();
@@ -197,6 +233,13 @@ public class RxWifi {
         return trimSsid.equals(ssid) && wifiInfo.getSupplicantState() == SupplicantState.COMPLETED;
     }
 
+    /**
+     *
+     * @param context
+     * @param ssid
+     * @param password
+     * @return
+     */
     @NonNull
     @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
     public static Maybe<String> connects(@NonNull final Context context, @NonNull final String ssid, @Nullable final String password) {
@@ -221,6 +264,12 @@ public class RxWifi {
             });
     }
 
+    /**
+     *
+     * @param context
+     * @param ssid
+     * @return
+     */
     @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
     public static Maybe<ScanResult> scanFor(@NonNull final Context context, @NonNull final String ssid) {
         return scan(context).flatMap(new Function<List<ScanResult>, ObservableSource<ScanResult>>() {
@@ -237,6 +286,12 @@ public class RxWifi {
         }).firstElement();
     }
 
+    /**
+     *
+     * @param context
+     * @param ssid
+     * @return
+     */
     public static Maybe<SupplicantState> connectedFor(@NonNull final Context context, @NonNull final String ssid) {
         return supplicantStates(context).filter(new Predicate<SupplicantState>() {
             @Override

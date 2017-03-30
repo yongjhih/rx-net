@@ -32,6 +32,12 @@ import io.reactivex.functions.Cancellable;
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 
 public class RxReceiverLocal {
+    /**
+     *
+     * @param context
+     * @param intentFilter
+     * @return
+     */
     @NonNull
     public static Observable<Intent> receives(@NonNull final Context context, @NonNull final IntentFilter intentFilter) {
         return Observable.create(new ObservableOnSubscribe<Intent>() {

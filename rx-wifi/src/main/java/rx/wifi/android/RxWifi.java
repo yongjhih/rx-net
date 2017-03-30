@@ -29,7 +29,10 @@ import android.support.annotation.Nullable;
 
 import java.util.List;
 
+import io.reactivex.Maybe;
+import io.reactivex.MaybeSource;
 import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
@@ -37,9 +40,10 @@ import io.reactivex.functions.Predicate;
 import rx.receiver.android.RxReceiver;
 
 public class RxWifi {
+    @SuppressLint("NewApi")
     @NonNull
     public static Observable<List<ScanResult>> scan(@NonNull final Context context) {
-        final WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        final WifiManager wifiManager = context.getSystemService(WifiManager.class);
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.RSSI_CHANGED_ACTION);
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
@@ -59,6 +63,12 @@ public class RxWifi {
                 });
     }
 
+    /**
+     * TODO @WifiState
+     *
+     * @param context
+     * @return @WifiState
+     */
     @NonNull
     public static Observable<Integer> states(@NonNull final Context context) {
         final IntentFilter intentFilter = new IntentFilter();
@@ -88,7 +98,7 @@ public class RxWifi {
     }
 
     @NonNull
-    public static Observable<SupplicantState> connected(final Context context) {
+    public static Observable<SupplicantState> connected(@NonNull final Context context) {
         return supplicantStates(context)
                 .filter(new Predicate<SupplicantState>() {
                     @Override
@@ -99,7 +109,7 @@ public class RxWifi {
     }
 
     @SuppressLint("NewApi")
-    public static void connect(@NonNull final Context context, @NonNull String ssid) {
+    public static void connect(@NonNull final Context context, @NonNull final String ssid) {
         final WifiManager wifiManager = context.getSystemService(WifiManager.class);
         wifiManager.disconnect();
         for (WifiConfiguration config : wifiManager.getConfiguredNetworks()) {
@@ -114,34 +124,60 @@ public class RxWifi {
     }
 
     @SuppressLint("NewApi")
-    public static boolean hasConnected(@NonNull final Context context, @NonNull String ssid) {
+    public static boolean isConnected(@NonNull final Context context, @NonNull final String ssid) {
         final WifiManager wifiManager = context.getSystemService(WifiManager.class);
         final WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-
         String trimSsid = wifiInfo.getSSID().replaceAll("\"$", "").replaceAll("^\"", "");
-        if (!trimSsid.equals(ssid)) {
-            return false;
-        }
 
-        if (wifiInfo.getSupplicantState() != SupplicantState.COMPLETED) {
-            return false;
-        }
-
-        return true;
+        return trimSsid.equals(ssid) && wifiInfo.getSupplicantState() == SupplicantState.COMPLETED;
     }
 
     @NonNull
-    public Observable<ScanResult> connects(@NonNull final Context context, @NonNull String ssid) {
-        // TODO
-        return Observable.empty();
-    //     if ()
-    //     connect(context, ssid)
-    //     return supplicantStates(context)
-    //             .filter(new Predicate<SupplicantState>() {
-    //                 @Override
-    //                 public boolean test(SupplicantState supplicantState) throws Exception {
-    //                     return supplicantState == SupplicantState.COMPLETED;
-    //                 }
-    //             });
+    public Maybe<String> connects(@NonNull final Context context, @NonNull final String ssid) {
+        if (isConnected(context, ssid)) return Maybe.just(ssid);
+
+        return scanFor(context, ssid)
+            .doOnSuccess(new Consumer<ScanResult>() {
+                @Override
+                public void accept(ScanResult scanResult) throws Exception {
+                    connect(context, ssid);
+                }
+            }).flatMap(new Function<ScanResult, MaybeSource<SupplicantState>>() {
+                @Override
+                public MaybeSource<SupplicantState> apply(ScanResult scanResult) throws Exception {
+                    return connectedFor(context, ssid);
+                }
+            }).map(new Function<SupplicantState, String>() {
+                @Override
+                public String apply(SupplicantState supplicantState) throws Exception {
+                    return ssid;
+                }
+            });
+    }
+
+    @SuppressLint("NewApi")
+    public static Maybe<ScanResult> scanFor(@NonNull final Context context, @NonNull final String ssid) {
+        return scan(context).flatMap(new Function<List<ScanResult>, ObservableSource<ScanResult>>() {
+            @Override
+            public ObservableSource<ScanResult> apply(List<ScanResult> scanResults) throws Exception {
+                return Observable.fromIterable(scanResults);
+            }
+        }).filter(new Predicate<ScanResult>() {
+            @Override
+            public boolean test(ScanResult scanResult) throws Exception {
+                String trimSsid = scanResult.SSID.replaceAll("\"$","").replaceAll("^\"","");
+                return trimSsid.equals(ssid);
+            }
+        }).firstElement();
+    }
+
+    @SuppressLint("NewApi")
+    public static Maybe<SupplicantState> connectedFor(@NonNull final Context context, @NonNull final String ssid) {
+        return supplicantStates(context).filter(new Predicate<SupplicantState>() {
+            @Override
+            public boolean test(SupplicantState state) throws Exception {
+                return isConnected(context, ssid);
+            }
+        }).firstElement();
     }
 }

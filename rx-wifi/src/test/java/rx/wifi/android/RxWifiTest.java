@@ -44,6 +44,58 @@ import static android.net.wifi.WifiManager.WIFI_STATE_UNKNOWN;
 @Config(constants = BuildConfig.class)
 public class RxWifiTest {
     @Test
+    public void scan() throws Exception {
+        // TODO
+    }
+
+    @Test
+    public void states() throws Exception {
+        // TODO
+    }
+
+    @Test
+    public void supplicantStates() throws Exception {
+        // TODO
+
+    }
+
+    @Test
+    public void connected() throws Exception {
+        // TODO
+
+    }
+
+    @Test
+    public void connect() throws Exception {
+        // TODO
+
+    }
+
+    @Test
+    public void isConnected() throws Exception {
+        // TODO
+
+    }
+
+    @Test
+    public void connects() throws Exception {
+        // TODO
+
+    }
+
+    @Test
+    public void scanFor() throws Exception {
+        // TODO
+
+    }
+
+    @Test
+    public void connectedFor() throws Exception {
+        // TODO
+
+    }
+
+    @Test
     public void testScan() {
         // TODO
     }

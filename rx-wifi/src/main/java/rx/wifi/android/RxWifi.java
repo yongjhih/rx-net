@@ -237,6 +237,18 @@ public class RxWifi {
      *
      * @param context
      * @param ssid
+     * @return
+     */
+    @NonNull
+    @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
+    public static Maybe<String> connects(@NonNull final Context context, @NonNull final String ssid) {
+        return connects(context, ssid, null);
+    }
+
+    /**
+     *
+     * @param context
+     * @param ssid
      * @param password
      * @return
      */

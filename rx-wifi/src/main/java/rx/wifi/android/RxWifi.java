@@ -54,6 +54,7 @@ public class RxWifi {
     @NonNull
     @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
     public static Observable<List<ScanResult>> scan(@NonNull final Context context) {
+        // Move into obs.<IntentFilter>fromCallable()?
         final WifiManager wifiManager = context.getSystemService(WifiManager.class);
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.RSSI_CHANGED_ACTION);
@@ -63,8 +64,6 @@ public class RxWifi {
                 .doOnSubscribe(new Consumer<Disposable>() {
                     @Override
                     public void accept(Disposable disposable) throws Exception {
-                        // Do not worry stopScan() here
-                        // obs.dispose -> onCancel -> unregister -> equal to stop scan
                         wifiManager.startScan();
                     }
                 })
@@ -72,6 +71,12 @@ public class RxWifi {
                     @Override
                     public List<ScanResult> apply(final Intent intent) throws Exception {
                         return wifiManager.getScanResults();
+                    }
+                })
+                .doOnNext(new Consumer<List<ScanResult>>() {
+                    @Override
+                    public void accept(final List<ScanResult> scanResults) throws Exception {
+                        wifiManager.startScan(); // Keep scanning
                     }
                 });
     }

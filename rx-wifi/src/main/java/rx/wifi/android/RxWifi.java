@@ -15,7 +15,6 @@
  */
 package rx.wifi.android;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -24,7 +23,6 @@ import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresPermission;
@@ -50,12 +48,11 @@ public class RxWifi {
      * @param context
      * @return
      */
-    @TargetApi(Build.VERSION_CODES.M)
     @NonNull
     @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
     public static Observable<List<ScanResult>> scan(@NonNull final Context context) {
         // Move into obs.<IntentFilter>fromCallable()?
-        final WifiManager wifiManager = context.getSystemService(WifiManager.class);
+        final WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.RSSI_CHANGED_ACTION);
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
@@ -156,9 +153,8 @@ public class RxWifi {
      * @param scanResult
      * @param password
      */
-    @TargetApi(Build.VERSION_CODES.M)
     public static void connect(@NonNull final Context context, @NonNull final ScanResult scanResult, @Nullable final String password) {
-        final WifiManager wifiManager = context.getSystemService(WifiManager.class);
+        final WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         final WifiConfiguration newConfig = new WifiConfiguration();
         final String trimSsid = scanResult.SSID.replaceAll("\"$", "").replaceAll("^\"", "");
         newConfig.SSID = "\""+ trimSsid + "\"";
@@ -229,9 +225,8 @@ public class RxWifi {
      * @param ssid
      * @return
      */
-    @TargetApi(Build.VERSION_CODES.M)
     public static boolean isConnected(@NonNull final Context context, @NonNull final String ssid) {
-        final WifiManager wifiManager = context.getSystemService(WifiManager.class);
+        final WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         final WifiInfo wifiInfo = wifiManager.getConnectionInfo();
         String trimSsid = wifiInfo.getSSID().replaceAll("\"$", "").replaceAll("^\"", "");
 

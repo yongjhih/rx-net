@@ -1,5 +1,5 @@
-include ':rx-wifi'
-include ':rx-receiver'
-include ':rx-receiver-local'
+include ':rx-wifi2'
+include ':rx-receiver2'
+include ':rx-receiver-local2'
 //include ':rx-battery'
 //include ':rx-telephony'

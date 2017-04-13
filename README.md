@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.yongjhih.rx-wifi:rx-wifi:0.0.2'
+    compile 'com.github.yongjhih.rx-wifi:rx-wifi2:0.0.2'
 }
 ```
 

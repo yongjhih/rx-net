@@ -24,10 +24,12 @@ import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.functions.Cancellable;
+import io.reactivex.functions.Consumer;
 
 public class RxConnectivity {
 
@@ -56,6 +58,11 @@ public class RxConnectivity {
                 networkRequest);
     }
 
+    /**
+     * @param connectivityManager
+     * @param networkRequest
+     * @return
+     */
     @CheckResult
     @NonNull
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -81,5 +88,42 @@ public class RxConnectivity {
                 connectivityManager.registerNetworkCallback(networkRequest, networkCallback);
             }
         });
+    }
+
+    /**
+     * @param connectivityManager
+     * @param networkRequest
+     * @return
+     */
+    @CheckResult
+    @NonNull
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public static Maybe<Network> defaultNetwork(
+            @NonNull final ConnectivityManager connectivityManager,
+            @NonNull final NetworkRequest networkRequest) {
+        return networks(connectivityManager, networkRequest).doOnNext(new Consumer<Network>() {
+            @Override
+            public void accept(Network network) throws Exception {
+                defaultNetwork(connectivityManager, network);
+
+            }
+        }).singleElement();
+    }
+
+    /**
+     * @param connectivityManager
+     * @param network
+     */
+    @NonNull
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public static void defaultNetwork(
+            @NonNull final ConnectivityManager connectivityManager,
+            @NonNull final Network network) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            ConnectivityManager.setProcessDefaultNetwork(network);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            connectivityManager.bindProcessToNetwork(network);
+        }
     }
 }

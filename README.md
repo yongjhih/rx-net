@@ -60,6 +60,28 @@ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 // connectivityManager.unregisterNetworkCallback(netCallback)
 ```
 
+## Bonus
+
+rx-connectivity:
+
+```java
+RxConnectivity.defaultNetwork(context, NetworkRequest.Builder()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build())
+        .subscribe()
+```
+
+rx-connectivity-kotlin:
+
+```kt
+connectivityManager.defaultNetwork(NetworkRequest.Builder()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build())
+        .subscribe()
+```
+
 p.s.:
 
 * It not works on Samsung Note Edge, Android 6.0.1

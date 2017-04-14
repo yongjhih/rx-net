@@ -15,14 +15,13 @@
  */
 package rx.wifi.android;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 import android.annotation.TargetApi;
 import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.support.annotation.StringDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * TODO: Move to wifi-android-annotations

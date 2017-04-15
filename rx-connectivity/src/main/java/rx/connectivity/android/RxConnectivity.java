@@ -129,6 +129,7 @@ public class RxConnectivity {
      * @param connectivityManager
      * @param network
      */
+    @SuppressWarnings("deprecation")
     @NonNull
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public static void defaultNetwork(

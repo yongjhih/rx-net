@@ -111,6 +111,21 @@ public class RxConnectivity {
     }
 
     /**
+     * @param context
+     * @param networkRequest
+     * @return
+     */
+    @NonNull
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public static Maybe<Network> defaultNetwork(
+            @NonNull final Context context,
+            @NonNull final NetworkRequest networkRequest) {
+        return defaultNetwork((ConnectivityManager)
+                context.getSystemService(Context.CONNECTIVITY_SERVICE),
+                networkRequest);
+    }
+
+    /**
      * @param connectivityManager
      * @param network
      */

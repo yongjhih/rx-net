@@ -82,6 +82,36 @@ connectivityManager.defaultNetwork(NetworkRequest.Builder()
         .subscribe()
 ```
 
+rx-receiver:
+
+```kt
+RxReceiver.receives(context, intentFilter).subscribe()
+```
+
+rx-receiver-kotlin:
+
+```kt
+intentFilter.receives(context).subscribe()
+```
+
+rx-receiver-local (v4):
+
+```kt
+RxReceiverLocal.receives(context, intentFilter).subscribe()
+```
+
+rx-receiver-local-kotlin (v4):
+
+```kt
+intentFilter.receivesLocal(context, intentFilter).subscribe()
+```
+
+rx-wifi-kotlin:
+
+```kt
+wifiManager.scan(context).subscribe()
+```
+
 p.s.:
 
 * It not works on Samsung Note Edge, Android 6.0.1

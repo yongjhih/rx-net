@@ -103,7 +103,7 @@ RxReceiverLocal.receives(context, intentFilter).subscribe()
 rx-receiver-local-kotlin (v4):
 
 ```kt
-intentFilter.receivesLocal(context, intentFilter).subscribe()
+intentFilter.receivesLocal(context).subscribe()
 ```
 
 rx-wifi-kotlin:

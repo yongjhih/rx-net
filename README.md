@@ -1,4 +1,4 @@
-# RxWifi
+# RxNet
 
 [![CircleCI](https://circleci.com/gh/yongjhih/rx-net.svg?style=shield)](https://circleci.com/gh/yongjhih/rx-net)
 [![codecov](https://codecov.io/gh/yongjhih/rx-net/branch/master/graph/badge.svg)](https://codecov.io/gh/yongjhih/rx-net)
@@ -27,45 +27,19 @@ RxWifi.connects(context, ssid, password)
    })
 ```
 
-## Installation
+rx-connectivity
 
-```gradle
-repositories {
-    jcenter()
-    maven { url "https://jitpack.io" }
-}
-
-dependencies {
-    compile 'com.github.yongjhih.rx-net:rx-wifi:-SNAPSHOT'
-}
+```java
+RxConnecitvity.connectivity(context).subscribe();
 ```
 
-## Known Issue - Connection failure to a no-internet Wi-Fi with smart network routing and mobile data enabled
-
-```kt
-if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val netCallback = object : ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                ConnectivityManager.setProcessDefaultNetwork(network)
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                connectivityManager.bindProcessToNetwork(network)
-            }
-        }
-    }
-    connectivityManager.registerNetworkCallback(NetworkRequest.Builder()
-            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-            .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .build(), netCallback)
-}
-
-// connectivityManager.unregisterNetworkCallback(netCallback)
+```java
+RxConnecitvity.internetivity(context).subscribeOn(io()).subscribe();
 ```
 
-## Bonus
-
-rx-connectivity:
+```java
+RxConnecitvity.isConnected(context);
+```
 
 ```java
 RxConnectivity.defaultNetwork(context, NetworkRequest.Builder()
@@ -113,6 +87,46 @@ rx-wifi-kotlin:
 
 ```kt
 wifiManager.scan(context).subscribe()
+```
+
+## Installation
+
+```gradle
+repositories {
+    jcenter()
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    compile 'com.github.yongjhih.rx-net:rx-wifi:-SNAPSHOT'
+    compile 'com.github.yongjhih.rx-net:rx-connectivity:-SNAPSHOT'
+    compile 'com.github.yongjhih.rx-net:rx-connectivity-kotlin:-SNAPSHOT'
+    compile 'com.github.yongjhih.rx-net:rx-receiver:-SNAPSHOT'
+    compile 'com.github.yongjhih.rx-net:rx-receiver-local:-SNAPSHOT'
+}
+```
+
+## Known Issue - Connection failure to a no-internet Wi-Fi with smart network routing and mobile data enabled
+
+```kt
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val netCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                ConnectivityManager.setProcessDefaultNetwork(network)
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                connectivityManager.bindProcessToNetwork(network)
+            }
+        }
+    }
+    connectivityManager.registerNetworkCallback(NetworkRequest.Builder()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build(), netCallback)
+}
+
+// connectivityManager.unregisterNetworkCallback(netCallback)
 ```
 
 p.s.:

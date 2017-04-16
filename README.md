@@ -1,5 +1,8 @@
 # RxWifi
 
+[![CircleCI](https://circleci.com/gh/yongjhih/rx-wifi.svg?style=shield)](https://circleci.com/gh/yongjhih/rx-wifi)
+[![codecov](https://codecov.io/gh/yongjhih/rx-wifi/branch/master/graph/badge.svg)](https://codecov.io/gh/yongjhih/rx-wifi)
+
 ## Usage
 
 Scan:

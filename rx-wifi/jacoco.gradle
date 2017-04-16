@@ -14,12 +14,12 @@ task jacocoTestReport(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
     html.enabled = true
   }
 
-  classDirectories = fileTree(dir: 'build/intermediates/classes/debug', excludes: jacocoExcludes)
-  sourceDirectories = files("src/main/java")
-  executionData = files("build/jacoco/testDebugUnitTest.exec")
+  classDirectories = fileTree(dir: "$buildDir/intermediates/classes/debug", excludes: jacocoExcludes)
+  sourceDirectories = files("$projectDir/src/main/java") // TODO sourceSets.main
+  executionData = files("$buildDir/jacoco/testDebugUnitTest.exec")
 
   doFirst {
-    file('build/intermediates/classes/debug').eachFileRecurse { file ->
+    file("$buildDir/intermediates/classes/debug").eachFileRecurse { file ->
       if (file.name.contains('$$')) {
         file.renameTo(file.path.replace('$$', '$'))
       }

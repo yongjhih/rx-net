@@ -1,7 +1,7 @@
 # RxWifi
 
-[![CircleCI](https://circleci.com/gh/yongjhih/rx-wifi.svg?style=shield)](https://circleci.com/gh/yongjhih/rx-wifi)
-[![codecov](https://codecov.io/gh/yongjhih/rx-wifi/branch/master/graph/badge.svg)](https://codecov.io/gh/yongjhih/rx-wifi)
+[![CircleCI](https://circleci.com/gh/yongjhih/rx-net.svg?style=shield)](https://circleci.com/gh/yongjhih/rx-net)
+[![codecov](https://codecov.io/gh/yongjhih/rx-net/branch/master/graph/badge.svg)](https://codecov.io/gh/yongjhih/rx-net)
 
 ## Usage
 
@@ -36,7 +36,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.yongjhih.rx-wifi:rx-wifi:-SNAPSHOT'
+    compile 'com.github.yongjhih.rx-net:rx-wifi:-SNAPSHOT'
 }
 ```
 

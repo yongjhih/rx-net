@@ -23,6 +23,7 @@ import android.os.Build;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.annotation.RequiresPermission;
 
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
@@ -30,6 +31,8 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.functions.Cancellable;
 import io.reactivex.functions.Consumer;
+
+import static android.Manifest.permission.ACCESS_NETWORK_STATE;
 
 public class RxConnectivity {
 
@@ -51,6 +54,7 @@ public class RxConnectivity {
     @CheckResult
     @NonNull
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresPermission(ACCESS_NETWORK_STATE)
     public static Observable<Network> networks(@NonNull final Context context,
                                         @NonNull final NetworkRequest networkRequest) {
         return networks(
@@ -66,6 +70,7 @@ public class RxConnectivity {
     @CheckResult
     @NonNull
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresPermission(ACCESS_NETWORK_STATE)
     public static Observable<Network> networks(
             @NonNull final ConnectivityManager connectivityManager,
                                         @NonNull final NetworkRequest networkRequest) {
@@ -98,6 +103,7 @@ public class RxConnectivity {
     @CheckResult
     @NonNull
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresPermission(ACCESS_NETWORK_STATE)
     public static Maybe<Network> defaultNetwork(
             @NonNull final ConnectivityManager connectivityManager,
             @NonNull final NetworkRequest networkRequest) {
@@ -117,6 +123,7 @@ public class RxConnectivity {
      */
     @NonNull
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresPermission(ACCESS_NETWORK_STATE)
     public static Maybe<Network> defaultNetwork(
             @NonNull final Context context,
             @NonNull final NetworkRequest networkRequest) {
@@ -132,6 +139,7 @@ public class RxConnectivity {
     @SuppressWarnings("deprecation")
     @NonNull
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresPermission(ACCESS_NETWORK_STATE)
     public static void defaultNetwork(
             @NonNull final ConnectivityManager connectivityManager,
             @NonNull final Network network) {

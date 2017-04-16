@@ -5,6 +5,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.0'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+        classpath 'com.dicedmelon.gradle:jacoco-android:0.1.1'
     }
 }
 
@@ -14,6 +15,7 @@ repositories {
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'jacoco-android'
 
 android {
     compileSdkVersion 25
@@ -53,4 +55,4 @@ tasks.withType(Test) {
 
 apply from: 'javadoc.gradle'
 apply plugin: 'com.github.dcendents.android-maven'
-apply from: 'jacoco.gradle'
+//apply from: 'jacoco.gradle'

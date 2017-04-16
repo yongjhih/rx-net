@@ -16,23 +16,36 @@
 package rx.connectivity.android;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Network;
+import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.os.Build;
-import android.support.annotation.CheckResult;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.annotation.RequiresPermission;
+import android.support.annotation.WorkerThread;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.annotations.CheckReturnValue;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Cancellable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import rx.receiver.android.RxReceiver;
 
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
+import static android.Manifest.permission.INTERNET;
 
 public class RxConnectivity {
 
@@ -51,7 +64,7 @@ public class RxConnectivity {
      *
      * ref. https://github.com/eryngii-mori/android-developer-preview/issues/2218
      */
-    @CheckResult
+    @CheckReturnValue
     @NonNull
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @RequiresPermission(ACCESS_NETWORK_STATE)
@@ -67,7 +80,7 @@ public class RxConnectivity {
      * @param networkRequest
      * @return
      */
-    @CheckResult
+    @CheckReturnValue
     @NonNull
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @RequiresPermission(ACCESS_NETWORK_STATE)
@@ -100,7 +113,7 @@ public class RxConnectivity {
      * @param networkRequest
      * @return
      */
-    @CheckResult
+    @CheckReturnValue
     @NonNull
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @RequiresPermission(ACCESS_NETWORK_STATE)
@@ -148,6 +161,102 @@ public class RxConnectivity {
             ConnectivityManager.setProcessDefaultNetwork(network);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             connectivityManager.bindProcessToNetwork(network);
+        }
+    }
+
+    @NonNull
+    @RequiresPermission(ACCESS_NETWORK_STATE)
+    public static Observable<Intent> connectivity(
+            @NonNull final Context context) {
+        return RxReceiver.receives(context,
+                new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    @RequiresPermission(ACCESS_NETWORK_STATE)
+    public static boolean isConnected(@NonNull final Context context) {
+        return isConnected((ConnectivityManager)
+                context.getSystemService(Context.CONNECTIVITY_SERVICE));
+    }
+
+    @RequiresPermission(ACCESS_NETWORK_STATE)
+    public static boolean isConnected(@NonNull final ConnectivityManager connectivityManager) {
+        final NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+
+    @NonNull
+    @RequiresPermission(allOf = {INTERNET, ACCESS_NETWORK_STATE})
+    public static Observable<Boolean> internectivity(
+            @NonNull final Context context) {
+        return connectivity(context).map(new Function<Intent, Boolean>() {
+                    @Override
+                    public Boolean apply(@NonNull Intent intent) throws Exception {
+                        return isResolvable();
+                    }
+                });
+    }
+
+    @RequiresPermission(INTERNET)
+    @WorkerThread
+    public static boolean isResolvable() {
+        return isResolvable("connectivitycheck.android.com");
+    }
+
+    @RequiresPermission(INTERNET)
+    @WorkerThread
+    public static boolean isResolvable(@NonNull final String host) {
+        try {
+            InetAddress.getByName(host);
+            return true;
+        } catch (UnknownHostException e) {
+            return false;
+        }
+    }
+
+    @RequiresPermission(INTERNET)
+    @WorkerThread
+    public static boolean isReachable() {
+        return isReachable("connectivitycheck.android.com");
+    }
+
+    @RequiresPermission(INTERNET)
+    @WorkerThread
+    public static boolean isReachable(@NonNull final String host) {
+        return isReachable(host, 200);
+    }
+
+    @RequiresPermission(INTERNET)
+    @WorkerThread
+    public static boolean isReachable(@NonNull final String host,
+                                      int timeout) {
+        try {
+            return InetAddress.getByName(host).isReachable(timeout);
+        } catch (UnknownHostException e) {
+            return false;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    @RequiresPermission(INTERNET)
+    @WorkerThread
+    public static boolean isConnectable(@NonNull final String host,
+                                        int port, int timeout) {
+        final Socket socket = new Socket();
+
+        try {
+            socket.connect(new InetSocketAddress(host, port), timeout);
+            return true;
+        } catch (UnknownHostException e) {
+            return false;
+        } catch (IOException e) {
+            return false;
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

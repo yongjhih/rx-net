@@ -24,6 +24,14 @@ android {
         minSdkVersion 9
         targetSdkVersion 25
     }
+
+    testOptions {
+        unitTests.all {
+            jacoco {
+                includeNoLocationClasses = true
+            }
+        }
+    }
 }
 
 dependencies {

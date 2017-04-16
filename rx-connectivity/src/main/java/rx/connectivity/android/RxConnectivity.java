@@ -42,7 +42,7 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Cancellable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
-import rx.receiver.android.RxReceiver;
+import rx2.receiver.android.RxReceiver;
 
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
 import static android.Manifest.permission.INTERNET;

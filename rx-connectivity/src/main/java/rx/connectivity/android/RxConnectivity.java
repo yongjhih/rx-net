@@ -86,7 +86,7 @@ public class RxConnectivity {
     @RequiresPermission(ACCESS_NETWORK_STATE)
     public static Observable<Network> networks(
             @NonNull final ConnectivityManager connectivityManager,
-                                        @NonNull final NetworkRequest networkRequest) {
+            @NonNull final NetworkRequest networkRequest) {
         return Observable.create(new ObservableOnSubscribe<Network>() {
             @Override
             public void subscribe(final ObservableEmitter<Network> emit) throws Exception {

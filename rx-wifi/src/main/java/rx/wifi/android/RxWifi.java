@@ -15,6 +15,7 @@
  */
 package rx.wifi.android;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -38,9 +39,12 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import rx2.receiver.android.RxReceiver;
+import io.reactivex.annotations.CheckReturnValue;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.ACCESS_WIFI_STATE;
+import static android.Manifest.permission.CHANGE_WIFI_STATE;
 
 public class RxWifi {
     /**
@@ -49,7 +53,9 @@ public class RxWifi {
      * @return
      */
     @NonNull
+    //@RequiresPermission(ACCESS_WIFI_STATE)
     @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
+    @CheckReturnValue
     public static Observable<List<ScanResult>> scan(@NonNull final Context context) {
         // Move into obs.<IntentFilter>fromCallable()?
         final WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -83,6 +89,8 @@ public class RxWifi {
      * @return Observable<@WifiState Integer>
      */
     @NonNull
+    @CheckReturnValue
+    @RequiresPermission(ACCESS_WIFI_STATE)
     public static Observable<Integer> states(@NonNull final Context context) {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
@@ -104,6 +112,8 @@ public class RxWifi {
      * @return
      */
     @NonNull
+    @CheckReturnValue
+    @RequiresPermission(ACCESS_WIFI_STATE)
     public static Observable<SupplicantState> supplicantStates(@NonNull final Context context) {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION);
@@ -128,6 +138,8 @@ public class RxWifi {
      * @return
      */
     @NonNull
+    @CheckReturnValue
+    @RequiresPermission(ACCESS_WIFI_STATE)
     public static Observable<SupplicantState> connected(@NonNull final Context context) {
         return supplicantStates(context)
                 .filter(new Predicate<SupplicantState>() {
@@ -143,6 +155,7 @@ public class RxWifi {
      * @param context
      * @param scanResult
      */
+    @RequiresPermission(CHANGE_WIFI_STATE)
     public static void connect(@NonNull final Context context, @NonNull final ScanResult scanResult) {
         connect(context, scanResult, null);
     }
@@ -153,17 +166,20 @@ public class RxWifi {
      * @param scanResult
      * @param password
      */
+    @RequiresPermission(CHANGE_WIFI_STATE)
     public static void connect(@NonNull final Context context,
                                @NonNull final ScanResult scanResult,
                                @Nullable final String password) {
         connect((WifiManager) context.getSystemService(Context.WIFI_SERVICE), scanResult, password);
     }
 
+    @RequiresPermission(CHANGE_WIFI_STATE)
     public static void connect(@NonNull final WifiManager wifimanager,
                                @NonNull final ScanResult scanResult) {
         connect(wifimanager, scanResult, null);
     }
 
+    @RequiresPermission(CHANGE_WIFI_STATE)
     public static void connect(@NonNull final WifiManager wifiManager,
                                @NonNull final ScanResult scanResult,
                                @Nullable final String password) {
@@ -237,6 +253,7 @@ public class RxWifi {
      * @param ssid
      * @return
      */
+    @RequiresPermission(ACCESS_WIFI_STATE)
     public static boolean isConnected(@NonNull final Context context, @NonNull final String ssid) {
         final WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         final WifiInfo wifiInfo = wifiManager.getConnectionInfo();
@@ -253,6 +270,8 @@ public class RxWifi {
      */
     @NonNull
     @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
+    //@RequiresPermission(CHANGE_WIFI_STATE)
+    @CheckReturnValue
     public static Maybe<String> connects(@NonNull final Context context, @NonNull final String ssid) {
         return connects(context, ssid, null);
     }
@@ -266,6 +285,8 @@ public class RxWifi {
      */
     @NonNull
     @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
+    //@RequiresPermission(CHANGE_WIFI_STATE)
+    @CheckReturnValue
     public static Maybe<String> connects(@NonNull final Context context, @NonNull final String ssid, @Nullable final String password) {
         if (isConnected(context, ssid)) return Maybe.just(ssid);
 
@@ -294,7 +315,9 @@ public class RxWifi {
      * @param ssid
      * @return
      */
+    @CheckReturnValue
     @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
+    @NonNull
     public static Maybe<ScanResult> scanFor(@NonNull final Context context, @NonNull final String ssid) {
         return scan(context).flatMap(new Function<List<ScanResult>, ObservableSource<ScanResult>>() {
             @Override
@@ -316,6 +339,9 @@ public class RxWifi {
      * @param ssid
      * @return
      */
+    @RequiresPermission(ACCESS_WIFI_STATE)
+    @CheckReturnValue
+    @NonNull
     public static Maybe<SupplicantState> connectedFor(@NonNull final Context context, @NonNull final String ssid) {
         return supplicantStates(context).filter(new Predicate<SupplicantState>() {
             @Override

@@ -101,14 +101,61 @@ public class RxWifiTest {
         ScanResult scanResultFoo = Shadow.newInstanceOf(ScanResult.class);
         scanResultFoo.SSID = "\"foo\"";
         scanResultFoo.BSSID = "02:00:00:00:00:00";
-        scanResultFoo.capabilities = "WEPA";
+        scanResultFoo.capabilities = "";
+
+        WifiConfiguration config = mock(WifiConfiguration.class);
+        config.networkId = 0;
+        config.SSID = "\"foo\"";
+
+        WifiConfiguration configBar = mock(WifiConfiguration.class);
+        configBar.networkId = 1;
+        configBar.SSID = "\"bar\"";
+        when(wifiManager.getConfiguredNetworks()).thenReturn(Arrays.asList(config, configBar));
+
+        RxWifi.connect(wifiManager, scanResultFoo);
+
+        verify(wifiManager).addNetwork(any(WifiConfiguration.class));
+        verify(wifiManager).disconnect();
+        verify(wifiManager).enableNetwork(config.networkId, true);
+        verify(wifiManager).disableNetwork(configBar.networkId);
+        verify(wifiManager).reconnect();
+    }
+
+    @Test
+    public void connectWEP() throws Exception {
+        WifiManager wifiManager = mock(WifiManager.class);
+        ScanResult scanResultFoo = Shadow.newInstanceOf(ScanResult.class);
+        scanResultFoo.SSID = "\"foo\"";
+        scanResultFoo.BSSID = "02:00:00:00:00:00";
+        scanResultFoo.capabilities = "WEP";
 
         WifiConfiguration config = mock(WifiConfiguration.class);
         config.networkId = 0;
         config.SSID = "\"foo\"";
         when(wifiManager.getConfiguredNetworks()).thenReturn(Arrays.asList(config));
 
-        RxWifi.connect(wifiManager, scanResultFoo);
+        RxWifi.connect(wifiManager, scanResultFoo, "password");
+
+        verify(wifiManager).addNetwork(any(WifiConfiguration.class));
+        verify(wifiManager).disconnect();
+        verify(wifiManager).enableNetwork(config.networkId, true);
+        verify(wifiManager).reconnect();
+    }
+
+    @Test
+    public void connectWPA() throws Exception {
+        WifiManager wifiManager = mock(WifiManager.class);
+        ScanResult scanResultFoo = Shadow.newInstanceOf(ScanResult.class);
+        scanResultFoo.SSID = "\"foo\"";
+        scanResultFoo.BSSID = "02:00:00:00:00:00";
+        scanResultFoo.capabilities = "WPA";
+
+        WifiConfiguration config = mock(WifiConfiguration.class);
+        config.networkId = 0;
+        config.SSID = "\"foo\"";
+        when(wifiManager.getConfiguredNetworks()).thenReturn(Arrays.asList(config));
+
+        RxWifi.connect(wifiManager, scanResultFoo, "password");
 
         verify(wifiManager).addNetwork(any(WifiConfiguration.class));
         verify(wifiManager).disconnect();

@@ -1,7 +1,3 @@
 include ':rx-wifi'
-include ':rx-receiver'
-include ':rx-receiver-local'
 include ':rx-connectivity'
 include ':rx-connectivity-kotlin'
-//include ':rx-battery'
-//include ':rx-telephony'

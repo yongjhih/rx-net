@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.SupplicantState;
+import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Parcelable;
 
@@ -44,6 +45,10 @@ import static android.net.wifi.WifiManager.EXTRA_WIFI_STATE;
 import static android.net.wifi.WifiManager.WIFI_STATE_CHANGED_ACTION;
 import static android.net.wifi.WifiManager.WIFI_STATE_DISABLED;
 import static android.net.wifi.WifiManager.WIFI_STATE_UNKNOWN;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
@@ -92,8 +97,23 @@ public class RxWifiTest {
 
     @Test
     public void connect() throws Exception {
-        // TODO
+        WifiManager wifiManager = mock(WifiManager.class);
+        ScanResult scanResultFoo = Shadow.newInstanceOf(ScanResult.class);
+        scanResultFoo.SSID = "\"foo\"";
+        scanResultFoo.BSSID = "02:00:00:00:00:00";
+        scanResultFoo.capabilities = "WEPA";
 
+        WifiConfiguration config = mock(WifiConfiguration.class);
+        config.networkId = 0;
+        config.SSID = "\"foo\"";
+        when(wifiManager.getConfiguredNetworks()).thenReturn(Arrays.asList(config));
+
+        RxWifi.connect(wifiManager, scanResultFoo);
+
+        verify(wifiManager).addNetwork(any(WifiConfiguration.class));
+        verify(wifiManager).disconnect();
+        verify(wifiManager).enableNetwork(config.networkId, true);
+        verify(wifiManager).reconnect();
     }
 
     @Test

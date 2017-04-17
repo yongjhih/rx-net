@@ -153,8 +153,20 @@ public class RxWifi {
      * @param scanResult
      * @param password
      */
-    public static void connect(@NonNull final Context context, @NonNull final ScanResult scanResult, @Nullable final String password) {
-        final WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+    public static void connect(@NonNull final Context context,
+                               @NonNull final ScanResult scanResult,
+                               @Nullable final String password) {
+        connect((WifiManager) context.getSystemService(Context.WIFI_SERVICE), scanResult, password);
+    }
+
+    public static void connect(@NonNull final WifiManager wifimanager,
+                               @NonNull final ScanResult scanResult) {
+        connect(wifimanager, scanResult, null);
+    }
+
+    public static void connect(@NonNull final WifiManager wifiManager,
+                               @NonNull final ScanResult scanResult,
+                               @Nullable final String password) {
         final WifiConfiguration newConfig = new WifiConfiguration();
         final String trimSsid = scanResult.SSID.replaceAll("\"$", "").replaceAll("^\"", "");
         newConfig.SSID = "\""+ trimSsid + "\"";

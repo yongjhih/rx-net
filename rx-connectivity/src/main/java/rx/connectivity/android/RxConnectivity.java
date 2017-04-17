@@ -126,7 +126,7 @@ public class RxConnectivity {
                 defaultNetwork(connectivityManager, network);
 
             }
-        }).singleElement();
+        }).firstElement();
     }
 
     /**

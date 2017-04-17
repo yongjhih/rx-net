@@ -18,6 +18,7 @@ package rx.wifi.android;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.ScanResult;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiManager;
 import android.os.Parcelable;
@@ -28,6 +29,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
+
+import java.util.Arrays;
+import java.util.List;
 
 import io.reactivex.observers.TestObserver;
 import rx.wifi.BuildConfig;
@@ -39,13 +44,33 @@ import static android.net.wifi.WifiManager.EXTRA_WIFI_STATE;
 import static android.net.wifi.WifiManager.WIFI_STATE_CHANGED_ACTION;
 import static android.net.wifi.WifiManager.WIFI_STATE_DISABLED;
 import static android.net.wifi.WifiManager.WIFI_STATE_UNKNOWN;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class)
 public class RxWifiTest {
+    @SuppressWarnings("MissingPermission")
     @Test
     public void scan() throws Exception {
-        // TODO
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiManager.RSSI_CHANGED_ACTION);
+        intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        Context context = RuntimeEnvironment.application.getApplicationContext();
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        shadowOf(wifiManager).setWifiEnabled(true);
+        ScanResult scanResultFoo = Shadow.newInstanceOf(ScanResult.class);
+        scanResultFoo.SSID = "\"foo\"";
+        scanResultFoo.BSSID = "02:00:00:00:00:00";
+        ScanResult scanResultBar = Shadow.newInstanceOf(ScanResult.class);
+        scanResultBar.SSID = "\"bar\"";
+        scanResultBar.BSSID = "02:00:00:00:00:01";
+        List<ScanResult> scanResults = Arrays.asList(scanResultFoo, scanResultBar);
+        shadowOf(wifiManager).setScanResults(scanResults);
+
+        TestObserver<List<ScanResult>> tester = RxWifi.scan(context).test();
+        Intent foobar = new Intent(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        context.sendBroadcast(foobar);
+        tester.assertValues(scanResults);
     }
 
     @Test

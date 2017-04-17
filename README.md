@@ -59,30 +59,6 @@ connectivityManager.defaultNetwork(NetworkRequest.Builder()
         .subscribe()
 ```
 
-rx-receiver:
-
-```kt
-RxReceiver.receives(context, intentFilter).subscribe()
-```
-
-rx-receiver-kotlin:
-
-```kt
-intentFilter.receives(context).subscribe()
-```
-
-rx-receiver-local (v4):
-
-```kt
-RxReceiverLocal.receives(context, intentFilter).subscribe()
-```
-
-rx-receiver-local-kotlin (v4):
-
-```kt
-intentFilter.receivesLocal(context).subscribe()
-```
-
 rx-wifi-kotlin:
 
 ```kt
@@ -101,10 +77,12 @@ dependencies {
     compile 'com.github.yongjhih.rx-net:rx-wifi:-SNAPSHOT'
     compile 'com.github.yongjhih.rx-net:rx-connectivity:-SNAPSHOT'
     compile 'com.github.yongjhih.rx-net:rx-connectivity-kotlin:-SNAPSHOT'
-    compile 'com.github.yongjhih.rx-net:rx-receiver:-SNAPSHOT'
-    compile 'com.github.yongjhih.rx-net:rx-receiver-local:-SNAPSHOT'
 }
 ```
+
+## See Also
+
+* https://github.com/yongjhih/rx-receiver
 
 ## Known Issue - Connection failure to a no-internet Wi-Fi with smart network routing and mobile data enabled
 

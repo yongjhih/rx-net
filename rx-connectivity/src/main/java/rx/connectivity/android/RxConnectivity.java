@@ -186,6 +186,7 @@ public class RxConnectivity {
 
     @NonNull
     @RequiresPermission(allOf = {INTERNET, ACCESS_NETWORK_STATE})
+    @WorkerThread
     public static Observable<Boolean> internectivity(
             @NonNull final Context context) {
         return connectivity(context).map(new Function<Intent, Boolean>() {

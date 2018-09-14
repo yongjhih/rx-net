@@ -91,7 +91,8 @@ public class RxWifi {
                     public List<ScanResult> apply(@NonNull final Intent intent) throws Exception {
                         return wifiManager.getScanResults();
                     }
-                });
+                })
+                .startWith(wifiManager.getScanResults());
     }
 
     /**

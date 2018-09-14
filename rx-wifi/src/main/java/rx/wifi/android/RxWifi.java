@@ -34,12 +34,11 @@ import io.reactivex.Maybe;
 import io.reactivex.MaybeSource;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.annotations.CheckReturnValue;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import rx2.receiver.android.RxReceiver;
-import io.reactivex.annotations.CheckReturnValue;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -55,6 +54,7 @@ public class RxWifi {
     @NonNull
     //@RequiresPermission(ACCESS_WIFI_STATE)
     @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})
+    @SuppressLint("MissingPermission")
     @CheckReturnValue
     public static Observable<List<ScanResult>> scan(@NonNull final Context context) {
         // Move into obs.<IntentFilter>fromCallable()?
@@ -79,9 +79,16 @@ public class RxWifi {
         //
         // ref. https://stackoverflow.com/questions/49178307/startscan-in-wifimanager-deprecated-in-android-p
         return RxReceiver.receives(context, intentFilter)
+                .filter(new Predicate<Intent>() {
+                    @Override
+                    public boolean test(@NonNull final Intent intent) throws Exception {
+                        return intent.getBooleanExtra(
+                                WifiManager.EXTRA_RESULTS_UPDATED, false);
+                    }
+                })
                 .map(new Function<Intent, List<ScanResult>>() {
                     @Override
-                    public List<ScanResult> apply(final Intent intent) throws Exception {
+                    public List<ScanResult> apply(@NonNull final Intent intent) throws Exception {
                         return wifiManager.getScanResults();
                     }
                 });

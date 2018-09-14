@@ -74,6 +74,7 @@ public class RxWifiTest {
 
         TestObserver<List<ScanResult>> tester = RxWifi.scan(context).test();
         Intent foobar = new Intent(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        foobar.putExtra(WifiManager.EXTRA_RESULTS_UPDATED, true);
         context.sendBroadcast(foobar);
         tester.assertValues(scanResults);
     }

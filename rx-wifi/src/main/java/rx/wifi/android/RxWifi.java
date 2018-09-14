@@ -63,23 +63,26 @@ public class RxWifi {
         intentFilter.addAction(WifiManager.RSSI_CHANGED_ACTION);
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 
+        // The WifiManager.startScan() usage is limited to:
+        //
+        // - Each foreground app is restricted to 4 scans every 2 minutes.
+        // - All background apps combined are restricted to one scan every 30 minutes."
+        //
+        // So we don't call wifiManager.startScan() anymore
+        //
+        // Observable.interval(30, TimeUnit.SECONDS)
+        //   .doOnNext { wifiManager.startScan() }
+        //   .subscribe();
+        //
+        // RxWifi.scan(context)
+        //   .subscribe();
+        //
+        // ref. https://stackoverflow.com/questions/49178307/startscan-in-wifimanager-deprecated-in-android-p
         return RxReceiver.receives(context, intentFilter)
-                .doOnSubscribe(new Consumer<Disposable>() {
-                    @Override
-                    public void accept(Disposable disposable) throws Exception {
-                        wifiManager.startScan();
-                    }
-                })
                 .map(new Function<Intent, List<ScanResult>>() {
                     @Override
                     public List<ScanResult> apply(final Intent intent) throws Exception {
                         return wifiManager.getScanResults();
-                    }
-                })
-                .doOnNext(new Consumer<List<ScanResult>>() {
-                    @Override
-                    public void accept(final List<ScanResult> scanResults) throws Exception {
-                        wifiManager.startScan(); // Keep scanning
                     }
                 });
     }
